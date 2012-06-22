@@ -25,11 +25,13 @@ module Usesguid
     end
 
     def assign_guid
-      self[self.class.primary_key] ||= case ActiveRecord::Base.guid_generator
-        when :mysql then UUID.mysql_create(self.connection)
-        when :timestamp then UUID.timestamp_create()
-        else raise "Unrecognized guid generator '#{ActiveRecord::Base.guid_generator.to_s}'"
-      end.to_s
+      if self[self.class.primary_key].blank? 
+        self[self.class.primary_key] = case ActiveRecord::Base.guid_generator
+          when :mysql then UUID.mysql_create(self.connection)
+          when :timestamp then UUID.timestamp_create()
+          else raise "Unrecognized guid generator '#{ActiveRecord::Base.guid_generator.to_s}'"
+        end.to_s
+      end
     end
 
     
