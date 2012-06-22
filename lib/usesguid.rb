@@ -12,9 +12,5 @@ end
 
 ActiveRecord::Base.class_eval do
   include Usesguid::ActiveRecordExtensions
-  def self.inherited(descendant)
-    ret = super(descendant)
-    descendant.send :include, Usesguid::ActiveRecordExtensions
-    ret
-  end
+
 end
