@@ -10,4 +10,11 @@ module Usesguid
   VERSION = '1.0.0'
 end
 
-ActiveRecord::Base.class_eval { include Usesguid::ActiveRecordExtensions } if defined?( ActiveRecord::Base )
+ActiveRecord::Base.class_eval do
+  include Usesguid::ActiveRecordExtensions
+  def self.inherited(descendant)
+    ret = super(descendant)
+    descendant.send :include, Usesguid::ActiveRecordExtensions
+    ret
+  end
+end
