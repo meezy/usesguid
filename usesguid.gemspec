@@ -24,7 +24,6 @@ Gem::Specification.new do |s|
      "VERSION",
      "lib/usesguid.rb",
      "lib/usesguid/active_record_extensions.rb",
-     "lib/usesguid/uuid22.rb",
      "lib/usesguid/uuid_mysql.rb",
      "lib/usesguid/uuidtools.rb",
      "script/console",
