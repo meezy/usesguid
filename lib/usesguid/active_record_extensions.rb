@@ -21,7 +21,12 @@ module Usesguid
         before_save :assign_guid
       end
 
-      base.primary_key = 'id' if base.columns.map(&:name).include?('id')
+      begin
+        base.primary_key = 'id' if base.columns.map(&:name).include?('id')
+      rescue Mysql2::Error
+        Rails.logger.error{"couldn't find cols for #{base.name} - probably nbd; om nom nom"}
+        #gulp
+      end
     end
 
     def assign_guid
