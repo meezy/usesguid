@@ -23,8 +23,9 @@ module Usesguid
 
       begin
         base.primary_key = 'id' if base.columns.map(&:name).include?('id')
-      rescue Mysql2::Error
+      rescue Exception => ex
         Rails.logger.error{"couldn't find cols for #{base.name} - probably nbd; om nom nom"}
+        Rails.logger.error{"for posterity, here's the error: #{ex}"}
         #gulp
       end
     end
