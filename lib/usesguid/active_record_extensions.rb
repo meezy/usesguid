@@ -21,11 +21,11 @@ module Usesguid
         before_save :assign_guid
       end
 
-      base.primary_key = 'id'
+      base.primary_key = 'id' if base.columns.map(&:name).include?('id')
     end
 
     def assign_guid
-      if self[self.class.primary_key].blank? || self.new_record?
+      if (self[self.class.primary_key].blank? || self.new_record?) && self.class.primary_key
         self[self.class.primary_key] = UUID.mysql_create(self.connection).to_s
       end
     end
