@@ -5,10 +5,10 @@
 
 Gem::Specification.new do |s|
   s.name = %q{usesguid}
-  s.version = "1.1.2"
+  s.version = "1.1.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Brian Morearty", "Demetrio Nunes", "Robert Aman", "C. Jason Harrelson(midas)"]
+  s.authors = ["Brian Morearty", "Demetrio Nunes", "Robert Aman", "C. Jason Harrelson(midas)", "Terry Heath"]
   s.date = %q{2012-08-20}
   s.description = %q{A much faster version of the usesguid plugin for Rails (uses MySQL to generate GUIDs)}
   s.email = %q{jason@lookforwardenterprises.com}

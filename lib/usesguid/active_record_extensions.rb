@@ -36,5 +36,8 @@ module Usesguid
       end
     end
 
+    module ClassMethods
+    end
+
   end #ActiveRecordExtensions
 end #Usesguid
