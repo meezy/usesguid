@@ -31,7 +31,7 @@ module Usesguid
     end
 
     def assign_guid
-      if (self[self.class.primary_key].blank? || self.new_record?) && self.class.primary_key
+      if (self[self.class.primary_key].blank? || self.new_record?) && self.class.primary_key && self.id.blank?
         id = self[self.class.primary_key] = UUID.mysql_create(self.connection).to_s
         raise StandardError, "guid can't generate!" if id.to_s == ''
       end
