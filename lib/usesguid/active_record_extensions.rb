@@ -18,7 +18,7 @@ module Usesguid
       base.extend( ClassMethods )
 
       base.class_eval do
-        before_save :assign_guid
+        after_initialize :assign_guid
       end
 
       begin
