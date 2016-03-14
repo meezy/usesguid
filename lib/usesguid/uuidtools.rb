@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-UUID_TOOLS_VERSION = "0.1.3"
+UUID2_TOOLS_VERSION = "0.1.3"
 
 $:.unshift(File.dirname(__FILE__))
 
@@ -31,7 +31,7 @@ require 'thread'
 require 'digest/sha1'
 require 'digest/md5'
 
-#  Because it's impossible to hype a UUID generator on its genuine merits,
+#  Because it's impossible to hype a UUID2 generator on its genuine merits,
 #  I give you... Really bad ASCII art in the comments:
 #
 #                                                                  
@@ -89,20 +89,20 @@ require 'digest/md5'
 
 #= uuidtools.rb
 #
-# UUIDTools was designed to be a simple library for generating any
-# of the various types of UUIDs.  It conforms to RFC 4122 whenever
+# UUID2Tools was designed to be a simple library for generating any
+# of the various types of UUID2s.  It conforms to RFC 4122 whenever
 # possible.
 #
 #== Example
-#  UUID.md5_create(UUID_DNS_NAMESPACE, "www.widgets.com")
-#  => #<UUID:0x287576 UUID:3d813cbb-47fb-32ba-91df-831e1593ac29>
-#  UUID.sha1_create(UUID_DNS_NAMESPACE, "www.widgets.com")
-#  => #<UUID:0x2a0116 UUID:21f7f8de-8051-5b89-8680-0195ef798b6a>
-#  UUID.timestamp_create
-#  => #<UUID:0x2adfdc UUID:64a5189c-25b3-11da-a97b-00c04fd430c8>
-#  UUID.random_create
-#  => #<UUID:0x19013a UUID:984265dc-4200-4f02-ae70-fe4f48964159>
-class UUID
+#  UUID2.md5_create(UUID2_DNS_NAMESPACE, "www.widgets.com")
+#  => #<UUID2:0x287576 UUID2:3d813cbb-47fb-32ba-91df-831e1593ac29>
+#  UUID2.sha1_create(UUID2_DNS_NAMESPACE, "www.widgets.com")
+#  => #<UUID2:0x2a0116 UUID2:21f7f8de-8051-5b89-8680-0195ef798b6a>
+#  UUID2.timestamp_create
+#  => #<UUID2:0x2adfdc UUID2:64a5189c-25b3-11da-a97b-00c04fd430c8>
+#  UUID2.random_create
+#  => #<UUID2:0x19013a UUID2:984265dc-4200-4f02-ae70-fe4f48964159>
+class UUID2
   @@last_timestamp = nil
   @@last_node_id = nil
   @@last_clock_sequence = nil
@@ -164,8 +164,8 @@ class UUID
   attr_accessor :clock_seq_low
   attr_accessor :nodes
   
-  # Parses a UUID from a string.
-  def UUID.parse(uuid_string)
+  # Parses a UUID2 from a string.
+  def UUID2.parse(uuid_string)
     unless uuid_string.kind_of? String
       raise ArgumentError,
         "Expected String, got #{uuid_string.class.name} instead."
@@ -173,7 +173,7 @@ class UUID
     uuid_components = uuid_string.downcase.scan(
       Regexp.new("^([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-" +
         "([0-9a-f]{2})([0-9a-f]{2})-([0-9a-f]{12})$")).first
-    raise ArgumentError, "Invalid UUID format." if uuid_components.nil?
+    raise ArgumentError, "Invalid UUID2 format." if uuid_components.nil?
     time_low = uuid_components[0].to_i(16)
     time_mid = uuid_components[1].to_i(16)
     time_hi_and_version = uuid_components[2].to_i(16)
@@ -183,17 +183,17 @@ class UUID
     for i in 0..5
       nodes << uuid_components[5][(i * 2)..(i * 2) + 1].to_i(16)
     end
-    return UUID.new(time_low, time_mid, time_hi_and_version,
+    return UUID2.new(time_low, time_mid, time_hi_and_version,
       clock_seq_hi_and_reserved, clock_seq_low, nodes)
   end
 
-  # Parses a UUID from a raw byte string.
-  def UUID.parse_raw(raw_string)
+  # Parses a UUID2 from a raw byte string.
+  def UUID2.parse_raw(raw_string)
     unless raw_string.kind_of? String
       raise ArgumentError,
         "Expected String, got #{raw_string.class.name} instead."
     end
-    integer = UUID.convert_byte_string_to_int(raw_string)
+    integer = UUID2.convert_byte_string_to_int(raw_string)
 
     time_low = (integer >> 96) & 0xFFFFFFFF
     time_mid = (integer >> 80) & 0xFFFF
@@ -204,13 +204,13 @@ class UUID
     for i in 0..5
       nodes << ((integer >> (40 - (i * 8))) & 0xFF)
     end
-    return UUID.new(time_low, time_mid, time_hi_and_version,
+    return UUID2.new(time_low, time_mid, time_hi_and_version,
       clock_seq_hi_and_reserved, clock_seq_low, nodes)
   end
 
-  # Creates a UUID from a random value.
-  def UUID.random_create()
-    new_uuid = UUID.parse_raw(UUID.true_random)
+  # Creates a UUID2 from a random value.
+  def UUID2.random_create()
+    new_uuid = UUID2.parse_raw(UUID2.true_random)
     new_uuid.time_hi_and_version &= 0x0FFF
     new_uuid.time_hi_and_version |= (4 << 12)
     new_uuid.clock_seq_hi_and_reserved &= 0x3F
@@ -218,12 +218,12 @@ class UUID
     return new_uuid
   end
 
-  # Creates a UUID from a timestamp.
-  def UUID.timestamp_create(timestamp=nil)
+  # Creates a UUID2 from a timestamp.
+  def UUID2.timestamp_create(timestamp=nil)
     # We need a lock here to prevent two threads from ever
     # getting the same timestamp.
     @@mutex.synchronize do
-      # Always use GMT to generate UUIDs.
+      # Always use GMT to generate UUID2s.
       if timestamp.nil?
         gmt_timestamp = Time.now.gmtime
       else
@@ -232,7 +232,7 @@ class UUID
       # Convert to 100 nanosecond blocks
       gmt_timestamp_100_nanoseconds = (gmt_timestamp.tv_sec * 10000000) +
         (gmt_timestamp.tv_usec * 10) + 0x01B21DD213814000
-      nodes = UUID.get_mac_address.split(":").collect do |octet|
+      nodes = UUID2.get_mac_address.split(":").collect do |octet|
         octet.to_i(16)
       end
       node_id = 0
@@ -241,11 +241,11 @@ class UUID
       end
       clock_sequence = @@last_clock_sequence
       if clock_sequence.nil?
-        clock_sequence = UUID.convert_byte_string_to_int(UUID.true_random)
+        clock_sequence = UUID2.convert_byte_string_to_int(UUID2.true_random)
       end
       if @@last_node_id != nil && @@last_node_id != node_id
         # The node id has changed.  Change the clock id.
-        clock_sequence = UUID.convert_byte_string_to_int(UUID.true_random)
+        clock_sequence = UUID2.convert_byte_string_to_int(UUID2.true_random)
       elsif @@last_timestamp != nil &&
           gmt_timestamp_100_nanoseconds < @@last_timestamp
         clock_sequence = clock_sequence + 1
@@ -262,34 +262,34 @@ class UUID
       clock_seq_hi_and_reserved = (clock_sequence & 0x3F00) >> 8
       clock_seq_hi_and_reserved |= 0x80
       
-      return UUID.new(time_low, time_mid, time_hi_and_version,
+      return UUID2.new(time_low, time_mid, time_hi_and_version,
         clock_seq_hi_and_reserved, clock_seq_low, nodes)
     end
   end
 
-  # Creates a UUID using the MD5 hash.  (Version 3)
-  def UUID.md5_create(namespace, name)
-    return UUID.create_from_hash(Digest::MD5, namespace, name)
+  # Creates a UUID2 using the MD5 hash.  (Version 3)
+  def UUID2.md5_create(namespace, name)
+    return UUID2.create_from_hash(Digest::MD5, namespace, name)
   end
   
-  # Creates a UUID using the SHA1 hash.  (Version 5)
-  def UUID.sha1_create(namespace, name)
-    return UUID.create_from_hash(Digest::SHA1, namespace, name)
+  # Creates a UUID2 using the SHA1 hash.  (Version 5)
+  def UUID2.sha1_create(namespace, name)
+    return UUID2.create_from_hash(Digest::SHA1, namespace, name)
   end
   
-  # This method applies only to version 1 UUIDs.
+  # This method applies only to version 1 UUID2s.
   # Checks if the node ID was generated from a random number
   # or from an IEEE 802 address (MAC address).
-  # Always returns false for UUIDs that aren't version 1.
-  # This should not be confused with version 4 UUIDs where
+  # Always returns false for UUID2s that aren't version 1.
+  # This should not be confused with version 4 UUID2s where
   # more than just the node id is random.
   def random_node_id?
     return false if self.version != 1
     return ((self.nodes.first & 0x01) == 1)
   end
   
-  # Returns true if this UUID is the
-  # nil UUID (00000000-0000-0000-0000-000000000000).
+  # Returns true if this UUID2 is the
+  # nil UUID2 (00000000-0000-0000-0000-000000000000).
   def nil_uuid?
     return false if self.time_low != 0
     return false if self.time_mid != 0
@@ -302,7 +302,7 @@ class UUID
     return true
   end
   
-  # Returns the UUID version type.
+  # Returns the UUID2 version type.
   # Possible values:
   # 1 - Time-based with unique or random host identifier
   # 2 - DCE Security version (with POSIX UIDs)
@@ -313,7 +313,7 @@ class UUID
     return (time_hi_and_version >> 12)
   end
 
-  # Returns the UUID variant.
+  # Returns the UUID2 variant.
   # Possible values:
   # 0b000 - Reserved, NCS backward compatibility.
   # 0b100 - The variant specified in this document.
@@ -332,7 +332,7 @@ class UUID
     return (result >> 6)
   end
   
-  # Returns true if this UUID is valid.
+  # Returns true if this UUID2 is valid.
   def valid?
     if [0b000, 0b100, 0b110, 0b111].include?(self.variant) &&
       (1..5).include?(self.version)
@@ -342,7 +342,7 @@ class UUID
     end
   end
   
-  # Returns the IEEE 802 address used to generate this UUID or
+  # Returns the IEEE 802 address used to generate this UUID2 or
   # nil if a MAC address was not used.
   def mac_address
     return nil if self.version != 1
@@ -352,7 +352,7 @@ class UUID
     end).join(":")
   end
   
-  # Returns the timestamp used to generate this UUID
+  # Returns the timestamp used to generate this UUID2
   def timestamp
     return nil if self.version != 1
     gmt_timestamp_100_nanoseconds = 0
@@ -364,7 +364,7 @@ class UUID
       (gmt_timestamp_100_nanoseconds - 0x01B21DD213814000) / 10000000.0)
   end
   
-  # Compares two UUIDs lexically
+  # Compares two UUID2s lexically
   def <=>(other_uuid)
     check = self.time_low <=> other_uuid.time_low
     return check if check != 0
@@ -390,20 +390,20 @@ class UUID
   
   # Returns a representation of the object's state
   def inspect
-    return "#<UUID:0x#{self.object_id.to_s(16)} UUID:#{self.to_s}>"
+    return "#<UUID2:0x#{self.object_id.to_s(16)} UUID2:#{self.to_s}>"
   end
   
-  # Returns the hex digest of the UUID object.
+  # Returns the hex digest of the UUID2 object.
   def hexdigest
     return self.to_i.to_s(16)
   end
   
-  # Returns the raw bytes that represent this UUID.
+  # Returns the raw bytes that represent this UUID2.
   def raw
-    return UUID.convert_int_to_byte_string(self.to_i, 16)
+    return UUID2.convert_int_to_byte_string(self.to_i, 16)
   end
   
-  # Returns a string representation for this UUID.
+  # Returns a string representation for this UUID2.
   def to_s
     result = sprintf("%8.8x-%4.4x-%4.4x-%2.2x%2.2x-", @time_low, @time_mid,
       @time_hi_and_version, @clock_seq_hi_and_reserved, @clock_seq_low);
@@ -413,7 +413,7 @@ class UUID
     return result
   end
   
-  # Returns an integer representation for this UUID.
+  # Returns an integer representation for this UUID2.
   def to_i
     bytes = (time_low << 96) + (time_mid << 80) +
       (time_hi_and_version << 64) + (clock_seq_hi_and_reserved << 56) +
@@ -424,17 +424,17 @@ class UUID
     return bytes
   end
     
-  # Returns a URI for this UUID.
+  # Returns a URI for this UUID2.
   def to_uri
     return URI.parse(self.to_uri_string)
   end
 
-  # Returns a URI string for this UUID.
+  # Returns a URI string for this UUID2.
   def to_uri_string
     return "urn:uuid:#{self.to_s}"
   end
   
-  def UUID.create_from_hash(hash_class, namespace, name) #:nodoc:
+  def UUID2.create_from_hash(hash_class, namespace, name) #:nodoc:
     if hash_class == Digest::MD5
       version = 3
     elsif hash_class == Digest::SHA1
@@ -447,7 +447,7 @@ class UUID
     hash.update(namespace.raw)
     hash.update(name)
     hash_string = hash.to_s[0..31]
-    new_uuid = UUID.parse("#{hash_string[0..7]}-#{hash_string[8..11]}-" +
+    new_uuid = UUID2.parse("#{hash_string[0..7]}-#{hash_string[8..11]}-" +
       "#{hash_string[12..15]}-#{hash_string[16..19]}-#{hash_string[20..31]}")
     
     new_uuid.time_hi_and_version &= 0x0FFF
@@ -459,7 +459,7 @@ class UUID
 
   # Returns the MAC address of the current computer's network card.
   # Returns nil if a MAC address could not be found.
-  def UUID.get_mac_address #:nodoc:
+  def UUID2.get_mac_address #:nodoc:
     if RUBY_PLATFORM =~ /win/ && !(RUBY_PLATFORM =~ /darwin/)
       begin
         ifconfig_output = `ipconfig /all`
@@ -501,7 +501,7 @@ class UUID
   # Returns 128 bits of highly unpredictable data.
   # The random number generator isn't perfect, but it's
   # much, much better than the built-in pseudorandom number generators.
-  def UUID.true_random #:nodoc:
+  def UUID2.true_random #:nodoc:
     require 'benchmark'
     hash = Digest::SHA1.new
     performance = Benchmark.measure do
@@ -530,14 +530,14 @@ class UUID
       rescue
       end
       hash.update(rand.to_s)
-      hash.update(UUID.true_random) if (rand(2) == 0)
+      hash.update(UUID2.true_random) if (rand(2) == 0)
     end
     hash.update(performance.real.to_s)
     hash.update(performance.inspect)
-    return UUID.convert_int_to_byte_string(hash.to_s[4..35].to_i(16), 16)
+    return UUID2.convert_int_to_byte_string(hash.to_s[4..35].to_i(16), 16)
   end
   
-  def UUID.convert_int_to_byte_string(integer, size) #:nodoc:
+  def UUID2.convert_int_to_byte_string(integer, size) #:nodoc:
     byte_string = ""
     for i in 0..(size - 1)
       byte_string << ((integer >> (((size - 1) - i) * 8)) & 0xFF)
@@ -545,7 +545,7 @@ class UUID
     return byte_string
   end
 
-  def UUID.convert_byte_string_to_int(byte_string) #:nodoc:
+  def UUID2.convert_byte_string_to_int(byte_string) #:nodoc:
     integer = 0
     size = byte_string.size
     for i in 0..(size - 1)
@@ -555,7 +555,7 @@ class UUID
   end
 end
 
-UUID_DNS_NAMESPACE = UUID.parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
-UUID_URL_NAMESPACE = UUID.parse("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
-UUID_OID_NAMESPACE = UUID.parse("6ba7b812-9dad-11d1-80b4-00c04fd430c8")
-UUID_X500_NAMESPACE = UUID.parse("6ba7b814-9dad-11d1-80b4-00c04fd430c8")
+UUID2_DNS_NAMESPACE = UUID2.parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+UUID2_URL_NAMESPACE = UUID2.parse("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
+UUID2_OID_NAMESPACE = UUID2.parse("6ba7b812-9dad-11d1-80b4-00c04fd430c8")
+UUID2_X500_NAMESPACE = UUID2.parse("6ba7b814-9dad-11d1-80b4-00c04fd430c8")
