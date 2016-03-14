@@ -17,7 +17,7 @@ class UUID2
     raise "UUID2.mysql_create only works with MySQL" unless adapter_name =~ /mysql/
     @@guid_bucket_mutex.synchronize do
       if @@guid_bucket.blank?
-        uuid_functions = Array.new(BUCKET_SIZE, "UUID2()")
+        uuid_functions = Array.new(BUCKET_SIZE, "UUID()")
         # Mysql2Adapter doesn't support fetch_row.
         if adapter_name == "mysql2"
           @@guid_bucket = connection.select_rows("SELECT #{uuid_functions.join(',')}").first
